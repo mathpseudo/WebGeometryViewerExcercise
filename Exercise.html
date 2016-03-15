@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"> 
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<title>Exercise for JSROOT Web Geometry Viewer</title>
+	<body>
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+		<script type="text/javascript" src="js/three.js"></script>
+		<script type="text/javascript" src="js/bootstrap.js"></script>
+		<table align="center">
+			<tr>
+				<td align="center">
+					<button type="button" onClick="zoomIn()">Zoom In</button>
+					<button type="button" onClick="zoomOut()">Zoom Out</button>
+				</td>
+			</tr>
+			<tr>
+				<td align="center">
+					<button type="button" onClick="rotate()">Rotate</button>
+				</td>
+			</tr>
+			<tr>
+				<td align="center">
+					Near Value &nbsp;<input type="text" id="near" value="">
+				</td>
+			</tr>
+			<tr>
+				<td align="center">
+					&nbsp;&nbsp;Far Value &nbsp;&nbsp;<input type="text" id="far" value="">
+				</td>	
+			</tr>
+			<tr>
+				<td align="center">
+					<button type="button" onClick="setNearFar()">Set Near & Far</button>
+				</td>
+			</tr>
+		</table>
+		<script type="text/javascript">
+			var camera, scene, renderer;
+			var VIEW_ANGLE = 75;
+			var WIDTH = window.innerWidth;
+			var HEIGHT = window.innerHeight;
+			var ASPECT_RATIO = WIDTH / HEIGHT;
+			var NEAR = 1;
+			var FAR = 10000;
+			var cube, sphere, torus, cylinder;
+			var mouseX = 0;
+			var mouseY = 0;
+			var windowHalfX = WIDTH / 2;
+			var windowHalfY = HEIGHT / 2;
+			
+			init();
+			animate();
+			
+			function init(){
+				scene = new THREE.Scene();
+				//scene.add( new THREE.AmbientLight( 0xaaaaaa) );
+				
+				var lights = [] ;
+				lights[0] = new THREE.PointLight( 0xffffff, 1 );
+				lights[1] = new THREE.PointLight( 0xffffff, 1 );
+				lights[2] = new THREE.PointLight( 0xffffff, 1 );
+				
+				lights[0].position.set( 0, 200, 0 );
+				lights[1].position.set( 100, 200, 100 );
+				lights[2].position.set( -100, 200, -100 );
+				
+				scene.add( lights[0] );
+				scene.add( lights[1] );
+				scene.add( lights[2] );
+				
+				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR );
+				camera.position.z = 1000;
+				
+				cubeGeometry = new THREE.BoxGeometry( 100, 100, 100 );
+				cubeMaterial = new THREE.MeshBasicMaterial( { color : 0xff00ff } );
+				cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
+				cube.position.set( 200, 200, 200 );
+				scene.add( cube );
+				
+				sphereGeometry = new THREE.SphereGeometry( 100, 32, 32 );
+				sphereMaterial = new THREE.MeshBasicMaterial( { color : 0xffff00 } );
+				sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+				sphere.position.set( -200, 200, 200 );
+				scene.add( sphere );
+				
+				cylinderGeometry = new THREE.CylinderGeometry( 100, 100, 100, 32 );
+				cylinderMaterial = new THREE.MeshBasicMaterial( { color : 0x0000ff } );
+				cylinder = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+				cylinder.position.set( 200, -200, 200 );
+				scene.add( cylinder );
+				
+				torusGeometry = new THREE.TorusGeometry( 100, 16, 16, 100);
+				torusMaterial = new THREE.MeshBasicMaterial( { color : 0x00ff00 } );
+				torus = new THREE.Mesh( torusGeometry, torusMaterial );
+				torus.position.set( -200, -200, 200 );
+				scene.add( torus );
+				
+				renderer = new THREE.WebGLRenderer( );
+				renderer.setSize( WIDTH, HEIGHT );
+				//renderer.setClearColor( 0xffffff, 0 );
+				
+				document.body.appendChild( renderer.domElement );
+				
+				window.addEventListener( 'resize', onWindowResize, false );
+				//window.addEventListener( 'mouseMove', onDocumentMouseMove, false );
+				
+			}
+			function animate() {
+				requestAnimationFrame( animate );
+				
+				//cube.rotation.x += 0.01;
+				//cube.rotation.y += 0.01;
+				
+				//sphere.rotation.x += 0.01;
+				//sphere.rotation.y += 0.01;
+				
+				//cylinder.rotation.x += 0.01;
+				//cylinder.rotation.y += 0.01;
+				
+				//torus.rotation.x += 0.005;
+				//torus.rotation.y += 0.005;
+				
+				renderer.render( scene, camera );
+			
+			}
+				
+			function onWindowResize() {
+				
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			
+			
+			/*function onDocumentMouseMove(event) {
+				
+				mouseX = ( event.clientX - windowHalfX ) * 4;
+				mouseY = ( event.clientY - windowHalfY ) * 4;
+
+			}*/
+			
+			function rotate() {
+
+				camera.rotation.x += 0.1;
+				camera.rotation.y += 0.1;
+
+			}
+	
+			function zoomIn() {
+				
+				camera.fov *= 0.8;
+				camera.updateProjectionMatrix();
+				
+			}
+			
+			function zoomOut() {
+				
+				camera.fov *= 1.25;
+				camera.updateProjectionMatrix();
+				
+			}
+			
+			function setNearFar() {
+				
+				var near = parseInt(document.getElementById("near").value);
+				var far = parseInt(document.getElementById("far").value);
+				
+				if(far <= near && far != "" && near != "") {
+					alert("Far value must be less than near");
+				}
+				else {					
+					if( near == "" ) {
+						camera.near = 1;
+					}
+					else {
+						camera.near = near;
+					}
+					if( far == "" ) {
+						camera.far = 10000;
+					}
+					else {
+						camera.far = far;
+					}
+				}
+				camera.updateProjectionMatrix();
+			}
+		</script>
+	</body>
+</html>
