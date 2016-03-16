@@ -7,13 +7,16 @@
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
 		<script type="text/javascript" src="js/three.js"></script>
 		<script type="text/javascript" src="js/bootstrap.js"></script>
+		<div id="canvas" onmousedown="zoom(event)"></div>
 		<table align="center">
+			<!--
 			<tr>
 				<td align="center">
 					<button type="button" onClick="zoomIn()">Zoom In</button>
 					<button type="button" onClick="zoomOut()">Zoom Out</button>
 				</td>
 			</tr>
+			-->
 			<tr>
 				<td align="center">
 					<button type="button" onClick="rotate()">Rotate</button>
@@ -44,10 +47,8 @@
 			var NEAR = 1;
 			var FAR = 10000;
 			var cube, sphere, torus, cylinder;
-			var mouseX = 0;
-			var mouseY = 0;
-			var windowHalfX = WIDTH / 2;
-			var windowHalfY = HEIGHT / 2;
+			var rotation = 0.0;
+			var CAMERA_RADIUS = 2000;
 			
 			init();
 			animate();
@@ -70,7 +71,9 @@
 				scene.add( lights[2] );
 				
 				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR );
-				camera.position.z = 1000;
+				camera.position.z = CAMERA_RADIUS;
+				//alert(camera.position.x);
+				//alert(camera.position.y);
 				
 				cubeGeometry = new THREE.BoxGeometry( 100, 100, 100 );
 				cubeMaterial = new THREE.MeshBasicMaterial( { color : 0xff00ff } );
@@ -100,7 +103,9 @@
 				renderer.setSize( WIDTH, HEIGHT );
 				//renderer.setClearColor( 0xffffff, 0 );
 				
-				document.body.appendChild( renderer.domElement );
+				container = document.getElementById( 'canvas' );
+				//document.body.appendChild( container );
+				container.appendChild( renderer.domElement );
 				
 				window.addEventListener( 'resize', onWindowResize, false );
 				//window.addEventListener( 'mouseMove', onDocumentMouseMove, false );
@@ -142,22 +147,37 @@
 			}*/
 			
 			function rotate() {
-
-				camera.rotation.x += 0.1;
-				camera.rotation.y += 0.1;
-
-			}
-	
-			function zoomIn() {
 				
-				camera.fov *= 0.8;
-				camera.updateProjectionMatrix();
+				rotation += 30 * ( Math.PI / 180 );
 				
+				camera.position.x = Math.sin(rotation) * CAMERA_RADIUS;
+				camera.position.z = Math.cos(rotation) * CAMERA_RADIUS;
+				
+				//console.log( camera.position.x );
+				//console.log( camera.position.z );
+				
+				camera.lookAt(scene.position);
+
 			}
 			
-			function zoomOut() {
+			function zoom( event ) {
 				
-				camera.fov *= 1.25;
+				/**
+				 * Clicking the left mouse button will zoom in and clicking the 
+				 * right mouse button will zoom out
+				 * 0 is left mouse button 
+				 * 2 is right mouse button
+				 **/
+				 
+				// left mouse click
+				if( event.button == 0 ) {
+					camera.fov *= 0.8;
+				}
+				
+				// right mouse click
+				if( event.button == 2 ) {
+					camera.fov *= 1.25;
+				}
 				camera.updateProjectionMatrix();
 				
 			}
@@ -184,6 +204,8 @@
 						camera.far = far;
 					}
 				}
+				//alert( camera.far );
+				//alert( camera.near );
 				camera.updateProjectionMatrix();
 			}
 		</script>
